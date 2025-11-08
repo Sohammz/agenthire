@@ -106,7 +106,7 @@ export default function DashboardClient() {
 
           <div className="flex items-center gap-3">
             <Link href="/dashboard/profile" className="px-3 py-2 rounded-lg border hover:bg-gray-50 transition text-sm">Edit profile</Link>
-            <Link href="/dashboard/interviews" className="px-3 py-2 rounded-lg bg-purple-600 text-white text-sm hover:bg-purple-700 transition">Start mock interview</Link>
+            <Link href="/agents" className="px-3 py-2 rounded-lg bg-purple-600 text-white text-sm hover:bg-purple-700 transition">Start mock interview</Link>
           </div>
         </div>
 
