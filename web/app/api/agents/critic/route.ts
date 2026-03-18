@@ -1,120 +1,103 @@
-// web/app/api/agents/critic/route.ts
 import { NextResponse } from 'next/server';
-import { supabaseAdmin } from '../../../../lib/supabaseServer';
-
-type Body = {
-  session_id: string;
-  question_id: string;
-  question_text: string;
-  question_type: 'behavioral' | 'technical';
-  user_answer: string;
-  ideal_answer?: string;
-};
 
 const OPENAI_KEY = process.env.OPENAI_API_KEY;
 
-async function callOpenAI(prompt: string) {
-  if (!OPENAI_KEY) throw new Error('OPENAI_API_KEY not set');
-  const res = await fetch('https://api.openai.com/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${OPENAI_KEY}`,
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      model: 'gpt-4o-mini',
-      messages: [
-        { role: 'system', content: 'You are a concise technical interviewer critic. Output JSON only.' },
-        { role: 'user', content: prompt }
-      ],
-      temperature: 0.0,
-      max_tokens: 800
-    })
-  });
+function isBadAnswer(text: string) {
+  if (!text) return true;
+  const t = text.trim();
 
-  if (!res.ok) {
-    const text = await res.text();
-    throw new Error(`OpenAI error ${res.status}: ${text}`);
-  }
-  return (await res.json()) as any;
+  if (t.length < 15) return true;
+  if (/^[a-zA-Z\s]+$/.test(t) && t.split(' ').length < 3) return true;
+
+  return false;
 }
 
 export async function POST(req: Request) {
   try {
-    const body: Body = await req.json();
-    const { session_id, question_id, question_text, question_type, user_answer, ideal_answer } = body;
+    const { session_id, questions } = await req.json();
 
-    let prompt = '';
-    if (question_type === 'behavioral') {
-      prompt = `
-Evaluate the candidate answer using STAR rubric and return JSON ONLY.
+    const validatedQuestions = questions.map((q: any) => ({
+      ...q,
+      is_invalid: isBadAnswer(q.user_answer),
+    }));
 
-Question: "${question_text}"
-Candidate answer: "${user_answer}"
-Ideal/notes: "${ideal_answer ?? ''}"
+    // 🔥 Build prompt
+    const prompt = `
+You are a STRICT FAANG interviewer.
 
-Return JSON exactly like:
+Evaluate the following interview.
+
+IMPORTANT RULES:
+- If answer is invalid (empty, vague, meaningless) → score MUST be 0
+- DO NOT give generic suggestions
+- Suggestions must be SPECIFIC to the answer
+- Be detailed and constructive
+- Give ideal answers that are high-quality
+
+${validatedQuestions.map((q: any, i: number) => `
+Q${i + 1}: ${q.question_text}
+Answer: ${q.user_answer}
+Invalid: ${q.is_invalid}
+`).join('\n')}
+
+Return ONLY JSON:
 {
-  "score": <0-10>,
-  "criteria": {
-    "situation_present": true/false,
-    "task_present": true/false,
-    "action_present": true/false,
-    "result_present": true/false,
-    "conciseness": <0-5>,
-    "suggestions": "<short actionable suggestions>"
-  }
-}
-`;
-    } else {
-      prompt = `
-You are a technical interviewer critic. Evaluate the candidate's answer w.r.t correctness, approach, complexity, and clarity. Return JSON ONLY.
-
-Question: "${question_text}"
-Candidate answer: "${user_answer}"
-Ideal/notes: "${ideal_answer ?? ''}"
-
-Return JSON exactly like:
-{
-  "score": <0-10>,
-  "criteria": {
-    "correctness": <0-5>,
-    "approach_clarity": <0-3>,
-    "complexity_discussed": true/false,
-    "suggestions": "<concise actionable feedback>"
-  }
-}
-`;
+  "questions": [
+    {
+      "score": number,
+      "feedback": "detailed evaluation",
+      "ideal_answer": "strong example answer",
+      "suggestions": "very specific improvements"
     }
+  ]
+}
+`;
 
-    const openaiResp = await callOpenAI(prompt);
-    const content = openaiResp?.choices?.[0]?.message?.content ?? '';
+    const res = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${OPENAI_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'gpt-4o-mini',
+        temperature: 0.2,
+        max_tokens: 1000,
+        messages: [
+          { role: 'system', content: 'You are a strict technical interviewer.' },
+          { role: 'user', content: prompt }
+        ]
+      }),
+    });
 
-    let parsed: any;
+    const data = await res.json();
+    const text = data?.choices?.[0]?.message?.content || '';
+
+    let parsed;
+
     try {
-      parsed = JSON.parse(content);
-    } catch (e) {
-      parsed = {
-        score: 6,
-        criteria: { suggestions: content }
-      };
+      parsed = JSON.parse(text);
+    } catch {
+      parsed = { questions: [] };
     }
 
-    // save to supabase
-    const { data: saved, error: saveErr } = await supabaseAdmin
-      .from('responses')
-      .insert([{
-        session_id,
-        question_id,
-        user_answer,
-        agent_feedback: parsed,
-        score: parsed.score ?? null
-      }])
-      .select()
-      .single();
+    // 🔥 FORCE INVALID TO ZERO
+    parsed.questions = parsed.questions.map((q: any, i: number) => {
+      if (validatedQuestions[i].is_invalid) {
+        return {
+          score: 0,
+          feedback: "Valid Response Missing",
+          ideal_answer: "Provide a structured and complete response.",
+          suggestions:
+            "Explain your approach step-by-step, include reasoning, and give a complete answer instead of a short response."
+        };
+      }
+      return q;
+    });
 
-    return NextResponse.json({ ok: true, feedback: parsed, saved: !!saved, saveErr: saveErr ?? null });
+    return NextResponse.json(parsed);
+
   } catch (err) {
-    return NextResponse.json({ error: (err as Error).message }, { status: 500 });
+    return NextResponse.json({ error: 'Evaluation failed' }, { status: 500 });
   }
 }

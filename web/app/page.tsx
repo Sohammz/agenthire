@@ -16,11 +16,30 @@ import {
 import Link from 'next/link';
 import Nav from '../components/Nav'
 import Footer from '../components/Footer'
+import { createClient } from '@supabase/supabase-js';
+
 /**
  * Upgraded HomePage — more professional, stronger animations & refined "How it works"
  * Accent: purple
  * Framer Motion variants typed as Record<string, any> to avoid TS issues
  */
+
+// ✅ SUPABASE CLIENT
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
+
+// ✅ AUTH REDIRECT FUNCTION
+async function handleRedirect(path: string) {
+  const { data } = await supabase.auth.getSession();
+
+  if (data.session) {
+    window.location.href = path;
+  } else {
+    window.location.href = '/login';
+  }
+}
 
 const containerFade: Record<string, any> = {
   hidden: { opacity: 0, y: 12 },
@@ -41,12 +60,12 @@ export default function HomePage() {
   const prefersReducedMotion = useReducedMotion();
 
   return (
-    
+
     <div className="min-h-screen bg-gradient-to-b from-white to-slate-50 dark:from-gray-950 dark:to-gray-900 text-gray-900 dark:text-gray-100 antialiased">
-      <Nav/>
+      <Nav />
       {/* HERO */}
 
-      <header className="pt-28 pb-10">
+      <header className="pt-24 pb-10">
         <div className="mx-auto max-w-7xl px-6">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
             <motion.div
@@ -83,7 +102,7 @@ export default function HomePage() {
                 </Link>
 
                 <a
-                  href="/ICIRSET2025-[201].pptx"
+                  href="/agenthire-paper.pdf"
                   download
                   className="inline-flex items-center gap-2 border px-4 py-2 rounded-lg text-sm text-gray-800 dark:text-gray-100 bg-white/70 dark:bg-gray-800/50 hover:bg-gray-100 transition shadow"
                 >
@@ -115,41 +134,50 @@ export default function HomePage() {
               whileInView="show"
               viewport={{ once: true }}
             >
-              <div className="relative mx-auto w-full max-w-md">
-                <div className="rounded-2xl p-6 bg-white dark:bg-gray-900 shadow-2xl ring-1 ring-black/4 overflow-hidden border">
-                  <div className="flex items-start gap-4">
-                    <div className="flex-1">
-                      <h3 className="text-lg font-semibold">Mock Interview Snapshot</h3>
-                      <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
-                        Real-time STAR analysis, scoring and concise improvement hints.
-                      </p>
+              <div className="grid gap-5">
 
-                      <div className="mt-4 grid gap-2">
-                        <MiniChip label="STAR completeness" value="8 / 10" />
-                        <MiniChip label="Conciseness" value="7 / 10" />
-                        <MiniChip label="Tech accuracy" value="9 / 10" />
-                      </div>
+                {/* 🔵 NORMAL INTERVIEW */}
+                <div className="rounded-2xl p-6 bg-purple-600 text-white shadow-2xl hover:shadow-3xl transition transform hover:-translate-y-1">
 
-                      <div className="mt-5 flex gap-3 items-center">
-                        <button className="px-3 py-2 rounded-md bg-purple-600 text-white hover:bg-purple-700 transition shadow hover:-translate-y-0.5">Practice now</button>
-                        <button className="px-3 py-2 rounded-md border hover:bg-gray-50 dark:hover:bg-gray-800 transition">View report</button>
-                      </div>
-                    </div>
+                  <h3 className="text-xl font-bold">
+                    Run Quick Practise
+                  </h3>
 
-                    <div className="hidden sm:block">
-                      <div className="h-20 w-20 rounded-lg bg-gradient-to-tr from-purple-50 to-purple-100 dark:from-purple-900/10 dark:to-purple-700/10 flex items-center justify-center shadow">
-                        <Users size={30} className="text-purple-700 dark:text-purple-300" />
-                      </div>
-                    </div>
-                  </div>
+                  <p className="mt-2 text-sm text-purple-100 leading-relaxed">
+                    Practice structured interview questions in a written format.
+                    Receive detailed AI feedback on clarity, technical accuracy,
+                    and STAR-based responses.
+                  </p>
+
+                  <button
+                    onClick={() => handleRedirect('/agents')}
+                    className="mt-5 inline-flex items-center gap-2 bg-white text-purple-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-100 transition"
+                  >
+                    Start Practice <ArrowRight size={14} />
+                  </button>
                 </div>
 
-                {!prefersReducedMotion && (
-                  <>
-                    <motion.div variants={float} animate="floatA" className="absolute -left-6 -top-6 h-16 w-16 rounded-full bg-purple-50 dark:bg-purple-900/10 blur-md opacity-80" />
-                    <motion.div variants={float} animate="floatB" className="absolute -right-6 -bottom-6 h-12 w-12 rounded-full bg-purple-100 dark:bg-purple-800/10 blur-md opacity-70" />
-                  </>
-                )}
+                {/* 🎥 VIDEO INTERVIEW */}
+                <div className="rounded-2xl p-6 bg-purple-700 text-white shadow-2xl hover:shadow-3xl transition transform hover:-translate-y-1">
+
+                  <h3 className="text-xl font-bold">
+                    AI - Powered Interview
+                  </h3>
+
+                  <p className="mt-2 text-sm text-purple-100 leading-relaxed">
+                    Experience a real-time AI interview with camera and voice.
+                    Your responses are transcribed, analyzed, and evaluated
+                    to simulate real interview conditions.
+                  </p>
+
+                  <button
+                    onClick={() => handleRedirect('/interview')}
+                    className="mt-5 inline-flex items-center gap-2 bg-white text-purple-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-100 transition"
+                  >
+                    Start Interview <ArrowRight size={14} />
+                  </button>
+                </div>
+
               </div>
             </motion.div>
           </div>
@@ -168,7 +196,7 @@ export default function HomePage() {
                 </p>
 
                 <div className="mt-6 flex gap-3">
-                  <a href="/ICIRSET2025-[201].pptx" download className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-purple-600 text-white hover:bg-purple-700 transition">
+                  <a href="//agenthire-paper.pdf" download className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-purple-600 text-white hover:bg-purple-700 transition">
                     Read paper <ArrowRight size={14} />
                   </a>
                   <Link
@@ -275,7 +303,7 @@ export default function HomePage() {
           </section>
         </div>
       </main>
-      
+
     </div>
 
   );

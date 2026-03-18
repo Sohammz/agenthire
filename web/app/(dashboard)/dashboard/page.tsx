@@ -106,7 +106,7 @@ export default function DashboardClient() {
 
           <div className="flex items-center gap-3">
             <Link href="/dashboard/profile" className="px-3 py-2 rounded-lg border hover:bg-gray-50 transition text-sm">Edit profile</Link>
-            <Link href="/agents" className="px-3 py-2 rounded-lg bg-purple-600 text-white text-sm hover:bg-purple-700 transition">Start mock interview</Link>
+            <Link href="/agents" className="px-3 py-2 rounded-lg bg-purple-600 text-white text-sm hover:bg-purple-700 transition">Start Interview</Link>
           </div>
         </div>
 
@@ -144,6 +144,13 @@ export default function DashboardClient() {
           {/* RIGHT: Main area - basic stats + analytics placeholder */}
           <section className="lg:col-span-8">
             <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className="rounded-2xl bg-white dark:bg-gray-900 p-6 shadow-lg">
+              <div className="mb-6">
+                <h4 className="font-semibold mb-3">Quick actions</h4>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <ActionCard title="Run quick practice" desc="Short behavioral drills (5 minutes)" href="/agents" />
+                  <ActionCard title="Take full Interview" desc="Full technical + behavioral session" href="/interview" />
+                </div>
+              </div>
               <h3 className="text-lg font-semibold mb-4">Overview</h3>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -160,19 +167,13 @@ export default function DashboardClient() {
                   </div>
 
                   <div className="flex gap-3">
-                    <Link href="/dashboard/interviews" className="px-4 py-2 rounded-lg bg-purple-600 text-white hover:bg-purple-700 transition">Start mock</Link>
+                    {/* <Link href="/dashboard/interviews" className="px-4 py-2 rounded-lg bg-purple-600 text-white hover:bg-purple-700 transition">Start mock</Link> */}
                     {/* <Link href="/dashboard/profile" className="px-4 py-2 rounded-lg border hover:bg-gray-50 transition">Edit profile</Link> */}
                   </div>
                 </div>
               </div>
 
-              <div className="mt-6">
-                <h4 className="font-semibold mb-3">Quick actions</h4>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <ActionCard title="Run quick practice" desc="Short behavioral drills (5 minutes)" href="/practice/quick" />
-                  <ActionCard title="Take full mock" desc="Full technical + behavioral session" href="/dashboard/interviews" />
-                </div>
-              </div>
+              
 
               <div className="mt-6 text-xs text-gray-400">
                 Note: analytics and visual reports are being built — they will appear here once you run mock interviews.
