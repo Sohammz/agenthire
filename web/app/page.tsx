@@ -152,13 +152,13 @@ export default function HomePage() {
                 </button>
               </motion.div>
 
-              <motion.div variants={cardRise} className="mt-6">
+              {/* <motion.div variants={cardRise} className="mt-6">
                 <div className="grid grid-cols-3 gap-4 max-w-md">
                   <Stat label="Agents" value="5 specialized" />
                   <Stat label="Iterations" value="Adaptive loops" />
                   <Stat label="Domains" value="Engineering-first" />
                 </div>
-              </motion.div>
+              </motion.div> */}
             </motion.div>
 
             {/* Right preview */}
