@@ -56,6 +56,41 @@ const float: Record<string, any> = {
   floatB: { y: [0, -8, 0], transition: { duration: 5.5, repeat: Infinity, ease: 'easeInOut' } },
 };
 
+function SimpleStep({
+  index,
+  title,
+  desc,
+}: {
+  index: number;
+  title: string;
+  desc: string;
+}) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 8 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ duration: 0.4, delay: index * 0.05 }}
+      className="flex items-start gap-4"
+    >
+      {/* DOT */}
+      {/* <div className="flex-shrink-0 mt-1">
+        <div className="h-8 w-8 rounded-full bg-purple-600 text-white flex items-center justify-center text-sm font-semibold shadow">
+          {index}
+        </div>
+      </div> */}
+
+      {/* CONTENT */}
+      <div className="bg-white dark:bg-gray-900 p-4 rounded-xl shadow hover:shadow-2xl transition w-full">
+        <h4 className="font-semibold">{title}</h4>
+        <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+          {desc}
+        </p>
+      </div>
+    </motion.div>
+  );
+}
+
 export default function HomePage() {
   const prefersReducedMotion = useReducedMotion();
 
@@ -209,38 +244,39 @@ export default function HomePage() {
               </div>
 
               {/* timeline */}
-              <div className="lg:col-span-2 ">
-                <motion.div initial="hidden" whileInView="show" variants={containerFade} viewport={{ once: true }}>
-                  <div className="relative">
-                    {/* vertical line */}
-                    <div className="absolute left-4 top-0 bottom-0 w-px bg-gray-200 dark:bg-gray-700 hidden md:block" />
+              <div className="lg:col-span-2">
+                <motion.div
+                  initial="hidden"
+                  whileInView="show"
+                  variants={containerFade}
+                  viewport={{ once: true }}
+                >
+                  <div className="space-y-6">
 
-                    <div className="space-y-6 md:space-y-8 ml-9">
-                      <TimelineStep
-                        index={1}
-                        title="Role Analysis"
-                        desc="InfoAgent extracts role requirements, skills and company signals from public sources (jobs, Glassdoor, official pages)."
-                        icon={<Zap size={16} />}
-                      />
-                      <TimelineStep
-                        index={2}
-                        title="Question Curation"
-                        desc="ExampleAgent curates behavioral and technical questions tailored to the role and difficulty level."
-                        icon={<Layers size={16} />}
-                      />
-                      <TimelineStep
-                        index={3}
-                        title="Mock Interview"
-                        desc="MockInterviewAgent conducts a live session, records answers, and captures timestamps & code snippets when relevant."
-                        icon={<Repeat size={16} />}
-                      />
-                      <TimelineStep
-                        index={4}
-                        title="Critique & Iterate"
-                        desc="CriticAgent scores responses across STAR metrics and suggests actionable improvements — iteration continues until thresholds are met."
-                        icon={<CheckCircle size={16} />}
-                      />
-                    </div>
+                    <SimpleStep
+                      index={1}
+                      title="Role Analysis"
+                      desc="InfoAgent extracts role requirements, skills and company signals from public sources."
+                    />
+
+                    <SimpleStep
+                      index={2}
+                      title="Question Curation"
+                      desc="ExampleAgent generates tailored behavioral and technical questions."
+                    />
+
+                    <SimpleStep
+                      index={3}
+                      title="Mock Interview"
+                      desc="AI conducts the interview and records your responses in real-time."
+                    />
+
+                    <SimpleStep
+                      index={4}
+                      title="Critique & Iterate"
+                      desc="CriticAgent evaluates responses and provides actionable improvements."
+                    />
+
                   </div>
                 </motion.div>
               </div>
