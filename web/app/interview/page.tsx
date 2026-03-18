@@ -124,7 +124,7 @@ export default function InterviewPage() {
     <div className="min-h-screen grid md:grid-cols-2 bg-gradient-to-b from-white to-slate-50 dark:from-gray-950 dark:to-gray-900">
 
       {/* LEFT SIDE — FULL PROFESSIONAL INSTRUCTIONS */}
-      <div className="flex flex-col justify-center py-14 space-y-10">
+      <div className="flex flex-col justify-center px-6 py-14 space-y-10">
 
         <div>
           <h1 className="text-5xl font-bold leading-tight">
